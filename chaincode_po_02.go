@@ -34,7 +34,7 @@ type Po struct {
 	Product    string  `json:"product"`
 	Qty       int     `json:"qty"`
 	Financing_amount  float64 `json:"financing_amount"`
-	shipment_number  string `json:"shipment_number"`
+	Shipment_number  string `json:"shipment_number"`
 }
 
 func main() {
