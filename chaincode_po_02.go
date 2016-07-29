@@ -21,20 +21,10 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"encoding/json"
-	//"github.com/bitly/go-simplejson" // for json get
 )
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
-}
-
-type Po struct {
-	Po_item     string  `json:"po_item"`
-	Product    string  `json:"product"`
-	Qty       int     `json:"qty"`
-	Financing_amount  float64 `json:"financing_amount"`
-	Shipment_number  string `json:"shipment_number"`
 }
 
 func main() {
@@ -65,8 +55,8 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 	// Handle different functions
 	if function == "init" {
 		return t.Init(stub, "init", args)
-	} else if function == "submit_po_to_supplier" {
-		return t.submit_po_to_supplier(stub, args)
+	} else if function == "write" {
+		return t.write(stub, args)
 	}
 	fmt.Println("invoke did not find func: " + function)
 
@@ -86,16 +76,19 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	return nil, errors.New("Received unknown function query")
 }
 
-// submit_po_to_supplier - invoke function to write key/value pair
-func (t *SimpleChaincode) submit_po_to_supplier(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+// write - invoke function to write key/value pair
+func (t *SimpleChaincode) write(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	var name, value string
+	var err error
+	fmt.Println("running write()")
 
-	var po = Po{Po_item: "001", Product: "Macbook", Qty: 2, Financing_amount: 16999.99}
-	poBytes, err := json.Marshal(&po)
-	if err != nil {
-		fmt.Println("error creating PO " + po.Po_item)
-		return nil, errors.New("error creating PO " + po.Po_item)
+	if len(args) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the variable and value to set")
 	}
-	err = stub.PutState(args[0], poBytes)
+
+	name = args[0]                            //rename for funsies
+	value = args[1]
+	err = stub.PutState(name, []byte(value))  //write the variable into the chaincode state
 	if err != nil {
 		return nil, err
 	}
@@ -120,3 +113,4 @@ func (t *SimpleChaincode) read(stub *shim.ChaincodeStub, args []string) ([]byte,
 
 	return valAsbytes, nil
 }
+
